@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <random>
 
 struct Matrix
 {
@@ -53,19 +54,27 @@ struct Matrix
         }
         return oss.str();
     }
+
+    void rand()
+    {
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::uniform_int_distribution<int> dis(0, 9);
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                (*this)[i][j] = dis(g);
+            }
+        }
+    }
 };
 
 int main()
 {
     std::cout << "Matrix A:" << std::endl;
     Matrix A(2, 3);
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            A[i][j] = i + j;
-        }
-    }
+    A.rand();
     std::cout << A.str() << std::endl;
     std::cout << "Matrix B:" << std::endl;
     Matrix B(3, 2);
