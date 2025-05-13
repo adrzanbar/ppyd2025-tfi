@@ -3,6 +3,25 @@
 #include <sstream>
 #include <random>
 
+#include <string>
+#include <iomanip> // para std::setprecision y std::fixed
+
+std::string format_double(double number) {
+    std::ostringstream oss;
+    oss << std::fixed << std::showpoint << std::setprecision(1);
+    oss << number;
+    return oss.str();
+}
+
+std::string center_num(double number, int total_ln) {
+    std::string num_str = format_double(number);
+    int espacios = total_ln - num_str.length();
+    int izquierda = espacios / 2;
+    int derecha = espacios - izquierda;
+    return std::string(izquierda, ' ') + num_str + std::string(derecha, ' ');
+}
+
+
 struct Matrix
 {
     int rows;
@@ -41,14 +60,37 @@ struct Matrix
         return result;
     }
 
-    std::string str() const
+    
+    int calculate_biggest_ln() const
     {
-        std::ostringstream oss;
+        int max_len = 0;
         for (int i = 0; i < rows; ++i)
         {
             for (int j = 0; j < cols; ++j)
             {
-                oss << (*this)[i][j] << " ";
+                std::string val_str = format_double((*this)[i][j]);
+                int len = val_str.length();
+                if (len > max_len)
+                {
+                    max_len = len;
+                }
+            }
+        }
+        return max_len;
+    }
+
+
+    std::string str() const
+    {
+        int biggest_ln = calculate_biggest_ln(); // Devuelve el número de la matriz con la longitud mayor en dígitos.
+
+        std::ostringstream oss;
+        for (int i = 0; i < rows; ++i)
+        {
+            // oss << "|";
+            for (int j = 0; j < cols; ++j)
+            {
+                oss << center_num((*this)[i][j], biggest_ln) << " ";
             }
             oss << "\n";
         }
