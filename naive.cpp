@@ -2,10 +2,10 @@
 #include <iostream>
 #include <sstream>
 #include <random>
-
 #include <string>
-#include <iomanip> // para std::setprecision y std::fixed
+#include <iomanip>
 
+// Funciones para darle formato a los numeros para imprimirlos por pantalla.
 std::string format_double(double number) {
     std::ostringstream oss;
     oss << std::fixed << std::showpoint << std::setprecision(1);
@@ -20,7 +20,7 @@ std::string center_num(double number, int total_ln) {
     int derecha = espacios - izquierda;
     return std::string(izquierda, ' ') + num_str + std::string(derecha, ' ');
 }
-
+// ---
 
 struct Matrix
 {
@@ -60,9 +60,22 @@ struct Matrix
         return result;
     }
 
-    
-    int calculate_biggest_ln() const
+    void rand()
     {
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::uniform_int_distribution<int> dis(0, 9);
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                (*this)[i][j] = dis(g);
+            }
+        }
+    }
+
+    int calculate_biggest_ln() const
+    {   // Convierte a string los valores de la matriz para medir la longitud de la cadena, devuelve el más grande.
         int max_len = 0;
         for (int i = 0; i < rows; ++i)
         {
@@ -79,10 +92,9 @@ struct Matrix
         return max_len;
     }
 
-
     std::string str() const
-    {
-        int biggest_ln = calculate_biggest_ln(); // Devuelve el número de la matriz con la longitud mayor en dígitos.
+    {   // Imprime el contenido de la matriz por pantalla.
+        int biggest_ln = calculate_biggest_ln();
 
         std::ostringstream oss;
         for (int i = 0; i < rows; ++i)
@@ -95,20 +107,6 @@ struct Matrix
             oss << "\n";
         }
         return oss.str();
-    }
-
-    void rand()
-    {
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::uniform_int_distribution<int> dis(0, 9);
-        for (int i = 0; i < rows; ++i)
-        {
-            for (int j = 0; j < cols; ++j)
-            {
-                (*this)[i][j] = dis(g);
-            }
-        }
     }
 };
 
