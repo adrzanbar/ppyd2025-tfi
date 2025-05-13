@@ -70,24 +70,19 @@ struct Matrix
     }
 };
 
-int main()
+int main(int argc, char *argv[])
 {
-    std::cout << "Matrix A:" << std::endl;
-    Matrix A(2, 3);
-    A.rand();
-    std::cout << A.str() << std::endl;
-    std::cout << "Matrix B:" << std::endl;
-    Matrix B(3, 2);
-    for (int i = 0; i < 3; ++i)
+    if (argc != 3)
     {
-        for (int j = 0; j < 2; ++j)
-        {
-            B[i][j] = i * j;
-        }
+        std::cerr << "Usage: " << argv[0] << " <rows> <cols>" << std::endl;
+        return 1;
     }
-    std::cout << B.str() << std::endl;
-    std::cout << "Matrix C (A * B):" << std::endl;
+    const int rows = std::stoi(argv[1]);
+    const int cols = std::stoi(argv[2]);
+    Matrix A(rows, cols);
+    A.rand();
+    Matrix B(rows, cols);
+    B.rand();
     Matrix C = A * B;
-    std::cout << C.str() << std::endl;
     return 0;
 }
