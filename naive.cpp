@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 struct Matrix
 {
@@ -38,4 +39,46 @@ struct Matrix
         }
         return result;
     }
+
+    std::string str() const
+    {
+        std::ostringstream oss;
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                oss << (*this)[i][j] << " ";
+            }
+            oss << "\n";
+        }
+        return oss.str();
+    }
 };
+
+int main()
+{
+    std::cout << "Matrix A:" << std::endl;
+    Matrix A(2, 3);
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            A[i][j] = i + j;
+        }
+    }
+    std::cout << A.str() << std::endl;
+    std::cout << "Matrix B:" << std::endl;
+    Matrix B(3, 2);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            B[i][j] = i * j;
+        }
+    }
+    std::cout << B.str() << std::endl;
+    std::cout << "Matrix C (A * B):" << std::endl;
+    Matrix C = A * B;
+    std::cout << C.str() << std::endl;
+    return 0;
+}
