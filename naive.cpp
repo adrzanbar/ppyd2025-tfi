@@ -16,8 +16,8 @@ std::string format_double(double number) {
 std::string center_num(double number, int total_ln) {
     std::string num_str = format_double(number);
     int espacios = total_ln - num_str.length();
-    int izquierda = espacios / 2;
-    int derecha = espacios - izquierda;
+    int derecha = espacios / 2;
+    int izquierda = espacios - derecha;
     return std::string(izquierda, ' ') + num_str + std::string(derecha, ' ');
 }
 // ---
@@ -123,6 +123,6 @@ int main(int argc, char *argv[])
     A.rand();
     Matrix B(rows, cols);
     B.rand();
-    Matrix C = A * B;
+    std::cout << (A * B).str();
     return 0;
 }
