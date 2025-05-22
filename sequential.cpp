@@ -47,14 +47,17 @@ struct Matrix
             throw std::invalid_argument("Matrix dimensions do not match for multiplication.");
         }
         Matrix result(rows, other.cols);
+
         for (int i = 0; i < rows; ++i)
         {
             for (int j = 0; j < other.cols; ++j)
             {
+                double sum = 0.0;
                 for (int k = 0; k < cols; ++k)
                 {
-                    result[i][j] += (*this)[i][k] * other[k][j];
+                    sum += (*this)[i][k] * other[k][j];
                 }
+                result[i][j] = sum;
             }
         }
         return result;
@@ -109,6 +112,8 @@ struct Matrix
         return oss.str();
     }
 };
+
+
 
 int main(int argc, char *argv[])
 {
