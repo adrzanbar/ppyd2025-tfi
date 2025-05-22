@@ -93,7 +93,7 @@ struct Matrix
     }
 
     std::string str() const
-    {   // Imprime el contenido de la matriz por pantalla.
+    {
         int biggest_ln = calculate_biggest_ln();
 
         std::ostringstream oss;
@@ -117,12 +117,16 @@ int main(int argc, char *argv[])
         std::cerr << "Usage: " << argv[0] << " <rows> <cols>" << std::endl;
         return 1;
     }
+
     const int rows = std::stoi(argv[1]);
     const int cols = std::stoi(argv[2]);
+
     Matrix A(rows, cols);
     A.rand();
     Matrix B(rows, cols);
     B.rand();
-    std::cout << (A * B).str();
+
+    std::cout << (A * B).str() << std::endl;
+
     return 0;
 }
