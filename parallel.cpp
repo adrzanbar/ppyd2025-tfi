@@ -24,10 +24,6 @@ struct Matrix
 
     Matrix operator*(const Matrix &other) const
     {
-        if (cols != other.rows)
-        {
-            throw std::invalid_argument("Matrix dimensions do not match for multiplication.");
-        }
         Matrix result(rows, other.cols);
 
         for (int i = 0; i < rows; ++i)
@@ -153,6 +149,13 @@ int main(int argc, char **argv)
     const int colsA = std::stoi(argv[2]);
     const int rowsB = std::stoi(argv[3]);
     const int colsB = std::stoi(argv[4]);
+
+    if (colsA != rowsB)
+    {
+        std::cerr << "Error: Number of columns in A must match number of rows in B." << std::endl;
+        MPI_Finalize();
+        return 1;
+    }
 
     Matrix A(rowsA, colsA);
     Matrix B(rowsB, colsB);

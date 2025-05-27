@@ -6,14 +6,16 @@
 #include <iomanip>
 
 // Funciones para darle formato a los numeros para imprimirlos por pantalla.
-std::string format_double(double number) {
+std::string format_double(double number)
+{
     std::ostringstream oss;
     oss << std::fixed << std::showpoint << std::setprecision(1);
     oss << number;
     return oss.str();
 }
 
-std::string center_num(double number, int total_ln) {
+std::string center_num(double number, int total_ln)
+{
     std::string num_str = format_double(number);
     int espacios = total_ln - num_str.length();
     int derecha = espacios / 2;
@@ -78,7 +80,7 @@ struct Matrix
     }
 
     int calculate_biggest_ln() const
-    {   // Convierte a string los valores de la matriz para medir la longitud de la cadena, devuelve el más grande.
+    { // Convierte a string los valores de la matriz para medir la longitud de la cadena, devuelve el más grande.
         int max_len = 0;
         for (int i = 0; i < rows; ++i)
         {
@@ -113,25 +115,31 @@ struct Matrix
     }
 };
 
-
-
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
+    if (argc != 5)
     {
-        std::cerr << "Usage: " << argv[0] << " <rows> <cols>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <rowsA> <colsA> <rowsB> <colsB>" << std::endl;
         return 1;
     }
 
-    const int rows = std::stoi(argv[1]);
-    const int cols = std::stoi(argv[2]);
+    const int rowsA = std::stoi(argv[1]);
+    const int colsA = std::stoi(argv[2]);
+    const int rowsB = std::stoi(argv[3]);
+    const int colsB = std::stoi(argv[4]);
 
-    Matrix A(rows, cols);
+    if (colsA != rowsB)
+    {
+        std::cerr << "Error: Number of columns in A must match number of rows in B." << std::endl;
+        return 1;
+    }
+
+    Matrix A(rowsA, colsA);
     A.rand();
-    Matrix B(rows, cols);
+    Matrix B(rowsB, colsB);
     B.rand();
 
-    std::cout << (A * B).str() << std::endl;
+    A * B;
 
     return 0;
 }
