@@ -3,6 +3,8 @@
 #include <random>
 #include <sstream>
 #include <mpi.h>
+#include <iostream>
+#include <fstream>
 
 double local_start_time, local_end_time;
 
@@ -144,9 +146,10 @@ int main(int argc, char **argv)
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    if (argc != 5)
+    if (argc != 6)
     {
-        std::cerr << "Usage: " << argv[0] << " <rowsA> <colsA> <rowsB> <colsB>" << std::endl;
+        if (rank == 0)
+            std::cerr << "Usage: " << argv[0] << " <rowsA> <colsA> <rowsB> <colsB> <n>" << std::endl;
         MPI_Finalize();
         return 1;
     }
@@ -155,54 +158,65 @@ int main(int argc, char **argv)
     const int colsA = std::stoi(argv[2]);
     const int rowsB = std::stoi(argv[3]);
     const int colsB = std::stoi(argv[4]);
+    const int n = std::stoi(argv[5]);
 
     if (colsA != rowsB)
     {
-        std::cerr << "Error: Number of columns in A must match number of rows in B." << std::endl;
+        if (rank == 0)
+            std::cerr << "Error: Number of columns in A must match number of rows in B." << std::endl;
         MPI_Finalize();
         return 1;
     }
 
-    Matrix A(rowsA, colsA);
-    Matrix B(rowsB, colsB);
-    Matrix C(rowsA, colsB);
-
-    if (rank == 0)
-    {
-        A.rand();
-        B.rand();
-
-        // std::cout << "Matrix A:" << std::endl;
-        // std::cout << A.str() << std::endl;
-
-        // std::cout << "Matrix B:" << std::endl;
-        // std::cout << B.str() << std::endl;
-    }
-    const double start_time = MPI_Wtime();
-    MPI_Matrix_Multiplication(A, B, C);
-    const double end_time = MPI_Wtime();
-
-    const double local_time = local_end_time - local_start_time;
-
     int size;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    std::vector<double> local_times(size);
 
-    MPI_Gather(&local_time, 1, MPI_DOUBLE, local_times.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
+    std::ostringstream filename;
+    filename << "timings-" << rowsA << "x" << colsA << "-" << rowsB << "x" << colsB << "-" << size << ".csv";
+    std::ofstream csv_file;
     if (rank == 0)
     {
-        //     std::cout << "Result Matrix C:" << std::endl;
-        //     std::cout << C.str() << std::endl;
-        std::cout << "Total time: " << (end_time - start_time) << " seconds" << std::endl;
+        csv_file.open(filename.str());
+        csv_file << "run,process,local_time,total_time\n";
+    }
+
+    for (int run = 0; run < n; ++run)
+    {
+        Matrix A(rowsA, colsA);
+        Matrix B(rowsB, colsB);
+        Matrix C(rowsA, colsB);
+
+        if (rank == 0)
+        {
+            A.rand();
+            B.rand();
+        }
+
+        const double start_time = MPI_Wtime();
+        MPI_Matrix_Multiplication(A, B, C);
+        const double end_time = MPI_Wtime();
+
+        const double local_time = local_end_time - local_start_time;
+        std::vector<double> local_times(size);
+
+        MPI_Gather(&local_time, 1, MPI_DOUBLE, local_times.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        if (rank == 0)
+        {
+            for (int i = 0; i < size; ++i)
+            {
+                csv_file << run << "," << i << "," << local_times[i] << ",";
+                if (i == 0)
+                    csv_file << (end_time - start_time);
+                csv_file << "\n";
+            }
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 
     if (rank == 0)
     {
-        for (int i = 0; i < size; ++i)
-        {
-            std::cout << "Process " << i << " local time: " << local_times[i] << " seconds" << std::endl;
-        }
+        csv_file.close();
     }
 
     MPI_Finalize();
