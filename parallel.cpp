@@ -143,8 +143,9 @@ void MPI_Matrix_Multiplication(const Matrix &A, const Matrix &B, Matrix &C)
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);
-    int rank;
+    int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (argc != 6)
     {
@@ -168,8 +169,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    int size;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if (rank == 0)
+    {
+        std::cout << "========================================" << std::endl;
+        std::cout << "Experiment: " << rowsA << "x" << colsA << " * " << rowsB << "x" << colsB
+                  << ", processes: " << size << ", runs: " << n << std::endl;
+        std::cout << "========================================" << std::endl;
+    }
 
     std::ostringstream filename;
     filename << "timings-" << rowsA << "x" << colsA << "-" << rowsB << "x" << colsB << "-" << size << ".csv";
@@ -182,6 +188,11 @@ int main(int argc, char **argv)
 
     for (int run = 0; run < n; ++run)
     {
+        if (rank == 0)
+        {
+            std::cout << "[Run " << run + 1 << "/" << n << "] Initializing matrices..." << std::endl;
+        }
+
         Matrix A(rowsA, colsA);
         Matrix B(rowsB, colsB);
         Matrix C(rowsA, colsB);
@@ -190,11 +201,22 @@ int main(int argc, char **argv)
         {
             A.rand();
             B.rand();
+            std::cout << "[Run " << run + 1 << "/" << n << "] Matrices randomized." << std::endl;
+        }
+
+        if (rank == 0)
+        {
+            std::cout << "[Run " << run + 1 << "/" << n << "] Starting parallel multiplication..." << std::endl;
         }
 
         const double start_time = MPI_Wtime();
         MPI_Matrix_Multiplication(A, B, C);
         const double end_time = MPI_Wtime();
+
+        if (rank == 0)
+        {
+            std::cout << "[Run " << run + 1 << "/" << n << "] Multiplication finished. Gathering timings..." << std::endl;
+        }
 
         const double local_time = local_end_time - local_start_time;
         std::vector<double> local_times(size);
@@ -210,12 +232,14 @@ int main(int argc, char **argv)
                     csv_file << (end_time - start_time);
                 csv_file << "\n";
             }
+            std::cout << "[Run " << run + 1 << "/" << n << "] Results written to CSV." << std::endl;
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
 
     if (rank == 0)
     {
+        std::cout << "Experiment finished. Results saved to " << filename.str() << std::endl;
         csv_file.close();
     }
 
