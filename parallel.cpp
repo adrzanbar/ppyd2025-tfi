@@ -4,6 +4,8 @@
 #include <sstream>
 #include <mpi.h>
 
+double local_start_time, local_end_time;
+
 struct Matrix
 {
     int rows;
@@ -45,7 +47,7 @@ struct Matrix
     {
         std::random_device rd;
         std::mt19937 g(rd());
-        std::uniform_int_distribution<int> dis(0, 9);
+        std::uniform_real_distribution<double> dis(0.0, 1.0);
         for (int i = 0; i < rows; ++i)
         {
             for (int j = 0; j < cols; ++j)
@@ -118,7 +120,11 @@ void MPI_Matrix_Multiplication(const Matrix &A, const Matrix &B, Matrix &C)
 
     MPI_Bcast((void *)B.data(), B.rows * B.cols, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
+    local_start_time = MPI_Wtime();
+
     Matrix localC = localA * B;
+
+    local_end_time = MPI_Wtime();
 
     MPI_Gatherv(
         localC.data(),
@@ -166,19 +172,37 @@ int main(int argc, char **argv)
         A.rand();
         B.rand();
 
-        std::cout << "Matrix A:" << std::endl;
-        std::cout << A.str() << std::endl;
+        // std::cout << "Matrix A:" << std::endl;
+        // std::cout << A.str() << std::endl;
 
-        std::cout << "Matrix B:" << std::endl;
-        std::cout << B.str() << std::endl;
+        // std::cout << "Matrix B:" << std::endl;
+        // std::cout << B.str() << std::endl;
     }
-
+    const double start_time = MPI_Wtime();
     MPI_Matrix_Multiplication(A, B, C);
+    const double end_time = MPI_Wtime();
+
+    const double local_time = local_end_time - local_start_time;
+
+    int size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    std::vector<double> local_times(size);
+
+    MPI_Gather(&local_time, 1, MPI_DOUBLE, local_times.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (rank == 0)
     {
-        std::cout << "Result Matrix C:" << std::endl;
-        std::cout << C.str() << std::endl;
+        //     std::cout << "Result Matrix C:" << std::endl;
+        //     std::cout << C.str() << std::endl;
+        std::cout << "Total time: " << (end_time - start_time) << " seconds" << std::endl;
+    }
+
+    if (rank == 0)
+    {
+        for (int i = 0; i < size; ++i)
+        {
+            std::cout << "Process " << i << " local time: " << local_times[i] << " seconds" << std::endl;
+        }
     }
 
     MPI_Finalize();

@@ -69,7 +69,7 @@ struct Matrix
     {
         std::random_device rd;
         std::mt19937 g(rd());
-        std::uniform_int_distribution<int> dis(0, 9);
+        std::uniform_real_distribution<double> dis(0.0, 1.0);
         for (int i = 0; i < rows; ++i)
         {
             for (int j = 0; j < cols; ++j)
@@ -139,7 +139,9 @@ int main(int argc, char *argv[])
     Matrix B(rowsB, colsB);
     B.rand();
 
+    //start
     A * B;
+    //end
 
     return 0;
 }
