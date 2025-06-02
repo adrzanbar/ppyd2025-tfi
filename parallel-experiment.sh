@@ -9,10 +9,11 @@ n=3
 
 # Path to the parallel executable
 EXEC="./parallel"
+HOSTFILE="hosts.txt"
 
 for size in "${sizes[@]}"; do
     for p in "${procs[@]}"; do
         echo "Running: size=${size}x${size}, procs=${p}, runs=${n}"
-        mpirun -np $p $EXEC $size $size $size $size $n
+        mpirun --hostfile $HOSTFILE -np $p $EXEC $size $size $size $size $n
     done
 done
